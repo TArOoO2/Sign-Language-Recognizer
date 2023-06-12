@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASL</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+</head>
+<style>body{
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-color: rgb(105, 128, 147);
+}
+.column {
+    float: left;
+   
+  }
+  .row {
+  display: flex;
+}
+
+.column {
+  flex: 50%;
+}
+
+
+
+#camera {
+        
+  display: block;
+    width: 400px;
+    height: 400px;
+    position: relative;
+    left: 20%;
+    background-color: #f2f2f2;
+      }
+
+      #camera-box {
+        position: relative;
+        height: 100%;
+        width: 100%;
+        border: 2px solid #000;
+      }
+
+    
+
+      #prediction-box {
+        
+        word-wrap: break-word;
+        max-width: 500px;
+        
+        
+    border: 2px solid #000;
+    font-size:25px;
+    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+    
+    
+     
+      }
+      .button {
+  padding: 15px 15px;
+  font-size: 24 px;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  color: #fff;
+  background-color: #303030;
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 9px #000000;
+  width: 200px;
+  
+}
+
+.button:hover {background-color: #9f0000}
+
+.button:active {
+  background-color: #444444;
+  box-shadow: 0 5px #000000;
+  transform: translateY(4px);
+}
+iframe {
+                width: 100%;
+                height: 400px;
+            }
+  </style>
+<body >
+
+   
+
+    
+    <nav class="navbar navbar-expand-lg " style=" height: 100px;">
+        <div class="container">
+          <a class="logo" alt="ASl">
+            <img src="{{ url_for('static', filename='images/logo.jpg') }}" width="100" height="100">
+             
+          </a>
+             <h4 style="font-style:initial;color: white">ASL TRANSLATOR</h4>
+          <button class="navbar-toggler" type="button" 
+          data-bs-toggle="collapse" 
+          data-bs-target="#main" 
+          aria-controls="main" aria-expanded="false" aria-label="Toggle navigation">
+          <i class="fa-solid fa-bars-staggered" style="color: aquamarine"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="main">  
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link p-lg-3" aria-current="page" href="{{url_for('home')}}">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link p-lg-3  active" href="{{url_for('index')}}">translator </a>
+              </li>
+            
+            <li class="nav-item">
+              <a class="nav-link p-lg-3" href="{{url_for('about')}}">about</a>
+            </li>
+              
+            </ul>
+          </div>
+        </div>
+      </nav>
+      <div class="row">
+        <div class="column">
+          <br>
+          <h1 style="text-align:center;font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; border: 3px solid #000000; background-color: #f2f2f2; width: 350px;position:relative; left: 170px">Sign to text</h1>
+          <br>
+          <div id="camera">
+            <div id="camera-box">
+              <img src="{{ url_for('video') }}" width="100%" height="100%" />
+            </div>
+          </div>
+          <br>
+            <div id="prediction-box" style="position: relative;
+            left: 110px;">
+             Dialogue : <span id="result">-</span>
+            </div>
+            <br>
+            <div style="position: relative;
+            left: 80px;">
+            <input type="button" value="space" onclick="spc()" class="button"/>
+            <input type="button" value="delete" onclick="del()" class="button"/>
+            <input type="button" value="Empty The Box" onclick="del_all()" class="button" style="width: auto;"/>
+            <br>
+            <br>
+            <label for="fetchingSpeedSelect" style="padding-left:  48px;font-size: 35px; font-family: 'Times New Roman', Times, serif;">Translation speed</label>
+            <select id="fetchingSpeedSelect" onchange="selectChangeHandler(this.value)" class="button" style="width: 210px;">
+                <option value="50" selected>live Translation</option>
+                <option value="1000">1s</option>
+                <option value="1500">1.5s</option>
+                <option value="4000">learning Sign</option>
+            </select>
+         </div>
+        
+    
+  <script>
+        // Periodically update the prediction result from the server
+        var str = "";
+        var lastTenPredictions = [];
+        // Delete all input
+        function del_all(){
+          str = ""
+        }
+        // Delete last element
+        function del(){
+          str = str.slice(0,-1);
+          document.querySelector('#result').innerText = str;
+        }
+        // space function
+        function spc(){
+          str += " ";
+          document.querySelector('#result').innerText = str;
+        }
+        
+        // This function receives a list of predictions and returns the most common prediction in the list
+      function getMostCommonPrediction(predictions) {
+        let counts = {}; 
+        for (let i = 0; i < predictions.length; i++) {
+          let prediction = predictions[i];
+          if (counts[prediction]) { 
+            counts[prediction]++;
+          } else { 
+            counts[prediction] = 1;
+          }
+        }
+        let mostCommonPrediction = predictions[0];
+        let maxCount = 1;
+        for (let prediction in counts) { // Loop through the counts object to find the most common prediction
+          if (counts[prediction] > maxCount) { 
+            mostCommonPrediction = prediction;
+            maxCount = counts[prediction];
+          }
+        }
+        return mostCommonPrediction;
+      }
+
+      // This code runs every 250 milliseconds to fetch the results and update the page
+
+    let fetchingSpeed = 50;
+    const minSpeed = 50;
+    const maxSpeed = 4000;
+
+    const selectChangeHandler = (val) => {
+        if (val>= minSpeed && val <= maxSpeed) {
+            fetchingSpeed = val;
+            console.log(val);
+            }
+            else {
+            fetchingSpeed = minSpeed;
+            }
+       }
+
+           const fetchingFunction = () => {
+                fetch('/results.json')
+        .then(response => response.json())
+        .then(data => {
+          if (data.prediction != 'waiting for sign') {
+            lastTenPredictions.push(data.prediction);
+            if (lastTenPredictions.length > 10) {
+              lastTenPredictions.shift();
+            }
+            console.log("Last ten predictions:", lastTenPredictions);
+            let mostCommonPrediction = getMostCommonPrediction(lastTenPredictions);
+            let count = 0;
+            for (let i = 0; i < lastTenPredictions.length; i++) {
+              if (lastTenPredictions[i] === mostCommonPrediction) {
+                count++;
+              }
+            }
+            if (count >= 8) {
+              console.log("8 out of 10 predictions are the same");
+              str += mostCommonPrediction;
+              lastTenPredictions = [];
+            }
+          } else {
+            lastTenPredictions = [];
+          }
+          console.log("Current str value:", str);
+          document.querySelector('#result').innerText = str ;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+
+                setTimeout(fetchingFunction, fetchingSpeed);
+            };
+
+            setTimeout(fetchingFunction, 100);
+
+  </script> 
+      </div>
+
+
+        
+          <div class="column" style="width: 50%">
+            <br>
+            <h1 style="text-align:center;font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; border: 3px solid #000000; background-color: #f2f2f2; width: 50%;position:relative; left: 22%;">Speech to sign</h1>
+            <form method="POST" action="/submit" target="abdallah" style="display:flex;flex-direction:column" onsubmit="submitHandler()">
+                <label for="text" style="text-align:center;font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;">Enter some text:</label>
+                <input type="text" id="text" name="text" class="mytext" placeholder="" style="border: 2px solid rgb(0, 0, 0);
+                  border-radius: 4px; width: 30%; ; height: 25px; position:relative;top:10px  ; left: 31%;" >
+                <button type="button" name="button" class="mic" onclick="record()" style="width:7% ;height:35px; position:relative;top:-23px  ; left: 62%;
+            border: 3px solid #0c0c0c;">
+                <img src="https://png.pngtree.com/png-vector/20190223/ourlarge/pngtree-vector-microphone-icon-png-image_695750.jpg" height="100%" width="100%" />
+              </button>
+                
+                <input type="submit" value="Animate" class="button" style="position:relative  ;
+                left:36%;" >
+              </form>
+              <br>
+              <div>
+                  <iframe src="" name = "abdallah" style = "display:block"> </iframe>
+              </div>
+              <br>
+            <div id="animation">
+            </div>
+            <script>
+              var source = new EventSource("/submit");
+              var animation = document.getElementById("animation");
+              source.addEventListener('message', function(event) {
+                  animation.innerHTML = '<img src="data:image/jpeg;base64,' + event.data + '">';
+              });
+
+              const iframe = document.querySelector('iframe');
+
+              const submitHandler = () => {
+                  iframe.src = "/submit";
+                  const myInterval = setInterval(myTimer, 1000);
+                  function myTimer() {
+                      if (iframe.contentWindow.document.querySelector('img') !== null){
+                          iframe.contentWindow.document.querySelector('img').style.width = '100%';
+                          iframe.contentWindow.document.querySelector('img').style.height = '100%';
+                          clearInterval(myInterval);
+                      }
+                  }
+              };
+
+              iframe.onload = () => {
+                  iframe.contentWindow.document.querySelector('img').style.width = '100%';
+                  iframe.contentWindow.document.querySelector('img').style.height = '100%';
+              };
+
+              function record(){
+                  var recognition = new webkitSpeechRecognition();
+                  recognition.lang='en-IN';
+
+                  recognition.onresult = function(event){
+                      console.log(event)
+                      document.getElementById('text').value = event.results[0][0].transcript;
+                  }
+                  recognition.start();
+              }
+          </script></div>
+        </div>
+        
+      
+      
+    
+
+</body>
+</html>
