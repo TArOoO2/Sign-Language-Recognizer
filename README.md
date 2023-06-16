@@ -4,7 +4,7 @@
 
 this website translate asl to text ✌️👌
 
-and speech to text 🎙️
+and speech to asl 🎙️
 
 after install this project ⬇️
 
