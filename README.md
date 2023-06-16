@@ -1,6 +1,13 @@
 # Sign-Language-Recognizer
-ASL Translator app
 
-after install this project 
+# ASL Translator website
 
-You can open a documention and see how the program works
+this website translate asl to text ✌️👌
+
+and speech to text 🎙️
+
+after install this project ⬇️
+
+You can open a documention and see how the program works 📖
+
+# enjoy it ❤️❤️
