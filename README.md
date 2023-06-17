@@ -2,9 +2,9 @@
 
 # ASL Translator website
 
-this website translate asl to text ✌️👌
+this website translate ASL to text ✌️👌
 
-and speech to asl 🎙️
+and speech to ASL 🎙️
 
 after install this project ⬇️
 
